@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String   @id @map("_id") @default(auto())  @db.ObjectId
+  email                   String   @unique 
+  stripeCustomerId        String?  @unique @map("stripe_customer_id")
+  stripeSubscriptionId    String?  @map("stripe_subscription_id")
+  stripePriceId           String?  @map("stripe_price_id")
+
+  stripeCurrentPeriodEnd  DateTime? @map("stripe_current_period_end")
+
+  @@map("user")
+}
