@@ -1,31 +1,48 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-// Ensure the correct route for uploadthing is public (adjust if needed)
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/api/uploadthing(.*)'])
-const isRootRoute = createRouteMatcher(['/'])
+// Define public routes
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)', 
+  '/sign-up(.*)', 
+  '/api/uploadthing(.*)',
+  '/api/webhooks/user(.*)',
+  '/api/sso-callback(.*)', // Corrected to 'api/sso-callback'
+]);
+
+// Define root route
+const isRootRoute = createRouteMatcher(['/']);
 
 export default clerkMiddleware((auth, req) => {
-  const { userId } = auth()
+  const { userId } = auth(); // Get userId from the auth object
 
- 
+  // Check if the request is for the root route
   if (isRootRoute(req)) {
-   
     if (!userId) {
-      const signInUrl = new URL('/sign-in', req.url)
-      return NextResponse.redirect(signInUrl)
+      const signInUrl = new URL('/sign-in', req.url);
+      return NextResponse.redirect(signInUrl);  
     }
   }
 
  
-  if (!isPublicRoute(req)) {
-    auth().protect()
+  if (req.nextUrl.pathname.startsWith('/dashboard')) {
+    if (!userId) {
+      const signInUrl = new URL('/sign-in', req.url);
+      return NextResponse.redirect(signInUrl);  
+    }
+    
   }
-})
 
+ 
+  if (!isPublicRoute(req)) {
+    auth().protect(); // Protect route using Clerk's authentication
+  }
+});
+
+// Middleware configuration
 export const config = {
   matcher: [
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    '/(api|trpc)(.*)', // Match API routes
   ],
-}
+};

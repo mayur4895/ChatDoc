@@ -11,6 +11,7 @@ import {
 } from '@clerk/nextjs'
 import Providers from "@/components/provider";
 import { Toaster } from "@/components/ui/toaster";
+import Navbar from "@/components/Navbar";
 const font = Poppins({ weight:['200','400','700','900'], subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -32,7 +33,10 @@ export default function RootLayout({
         <title>ChatWithPdf</title>
       </head>
       <body className={font.className}>
-        {children}
+      <Navbar/>
+ <div className=" mt-20">
+ {children}
+ </div>
         <Toaster />
       </body>
     </html>

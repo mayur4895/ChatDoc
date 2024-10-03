@@ -21,12 +21,12 @@ const Banner = () => {
    
          
         
-        <div className=' w-[400px] h-[500px] relative mt-2 z-20 '> 
+        <div className=' md:w-[600px] w-[500px] h-[500px] relative mt-2 z-20 '> 
         <div className="absolute   top-0 right-0  flex    ">
           <div className="bg-gradient-to-br from-red-500 to-purple-500   -translate-y-14 blur-lg opacity-20 rounded-full w-[300px] h-[300px] -z-10    "></div>
           <div className="bg-gradient-to-br from-blue-500 to-red-600  translate-x-16  translate-y-16  blur-lg opacity-20 rounded-full w-[300px] h-[300px] -z-10    "></div>
         </div> 
-        <img className='w-[500px] mx-auto relative z-10  drop-shadow-xl' src='/screen.png' alt='chatdoc logo' />
+        <img className=' w-[450px] md:w-[600px] mx-auto relative z-10  drop-shadow-xl' src='/screen.png' alt='chatdoc logo' />
               </div> 
        
    
