@@ -1,8 +1,9 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { TRPCError } from "@trpc/server";
-import { publicProcedure, router } from "./trpc";
+import { privateProcedure, publicProcedure, router } from "./trpc";
 import { db } from "@/lib/db";
-import { ObjectId } from "mongodb"; // Ensure to import ObjectId from mongodb
+ import { z } from 'zod';
+
 
 export const appRouter = router({
   authCallback: publicProcedure.query(async () => {
@@ -17,11 +18,7 @@ export const appRouter = router({
     const userId = user.id;  
     const email = user.emailAddresses[0]?.emailAddress;
 
-    // Log user details for debugging
-    console.log("User ID:", userId);
-    console.log("User Email:", email);
-
-    // Attempt to find the user in the database
+   
     let dbUser;
     try {
       dbUser = await db.user.findFirst({
@@ -49,6 +46,74 @@ export const appRouter = router({
     }
 
     return { success: true };
+  }),
+ 
+  getUserFiles: privateProcedure.query(async ({ ctx }) => {
+    const { userId } = ctx; 
+    if (!userId) { 
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "User ID not found." });
+    }
+     
+    try {
+   
+      const dbUser = await db.user.findFirst({
+        where: { externalId: userId },
+      });
+   
+      if (!dbUser) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found." });
+      } 
+      return await db.file.findMany({
+        where: {
+          userId: dbUser.id,  
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching user files:", error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch user files." });
+    }
+  }),
+  deleteFile: privateProcedure
+  .input(
+    z.object({
+      fileId: z
+        .string()
+        .min(1, "File ID is required")
+        .regex(/^[a-f\d]{24}$/i, "Invalid file ID format"), // Validate that it's a MongoDB ObjectId
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = ctx;
+    const { fileId } = input;
+
+    if (!userId) {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "User ID not found." });
+    }
+
+    try {
+      // Check if the file exists and belongs to the authenticated user
+      const file = await db.file.findFirst({
+        where: {
+          id: fileId,
+          userId: userId,
+        },
+      });
+
+      
+      if (!file) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "File not found or you don't have permission to delete this file." });
+      }
+
+      // Delete the file
+      await db.file.delete({
+        where: { id: fileId },
+      });
+
+      return { success: true, message: "File deleted successfully." };
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to delete file." });
+    }
   }),
 });
 

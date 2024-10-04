@@ -1,9 +1,10 @@
- import React from 'react'
+ import Dashboard from '@/components/Dashboard'
+import React from 'react'
  
  const DashbaordpPage = () => {
    return (
      <div>
-       dasboard
+     <Dashboard/>
      </div>
    )
  }

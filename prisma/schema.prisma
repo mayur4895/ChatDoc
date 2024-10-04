@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id                      String   @id @map("_id") @default(auto())  @db.ObjectId
-  externalId              String @unique
+  externalId              String   @unique
   email                   String   @unique 
   
   stripeCustomerId        String?  @unique @map("stripe_customer_id")
@@ -17,12 +17,35 @@ model User {
   stripePriceId           String?  @map("stripe_price_id")
   stripeCurrentPeriodEnd  DateTime? @map("stripe_current_period_end")
 
+
+ 
+  files                   File[]   @relation("UserFiles")
   @@map("user")
 }
 
 
+enum UploadStatus{
+  SUCCESS
+  FAILED
+  PROCESSING
+  PENDING
+}
 
+model File {
+  id            String       @id @map("_id") @default(auto()) @db.ObjectId
+  name          String
+  uploadStatus  UploadStatus @default(PENDING)
+  url           String
+  key           String
 
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user          User?        @relation(fields: [userId], references: [id], name: "UserFiles")
+  userId        String?      
+
+  @@map("file")
+}
 
 
 
