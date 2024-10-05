@@ -65,7 +65,7 @@ export const appRouter = router({
       } 
       return await db.file.findMany({
         where: {
-          userId: dbUser.id,  
+          userId: dbUser.externalId,  
         },
       });
     } catch (error) {
@@ -73,48 +73,70 @@ export const appRouter = router({
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch user files." });
     }
   }),
-  deleteFile: privateProcedure
-  .input(
-    z.object({
-      fileId: z
-        .string()
-        .min(1, "File ID is required")
-        .regex(/^[a-f\d]{24}$/i, "Invalid file ID format"), // Validate that it's a MongoDB ObjectId
-    })
-  )
-  .mutation(async ({ ctx, input }) => {
-    const { userId } = ctx;
-    const { fileId } = input;
 
-    if (!userId) {
-      throw new TRPCError({ code: "UNAUTHORIZED", message: "User ID not found." });
-    }
+ deleteFile: privateProcedure
+          .input(
+         z.object({
+         id:z.string()
+     
+      })
+    ).mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const { id } = input;
 
-    try {
-      // Check if the file exists and belongs to the authenticated user
-      const file = await db.file.findFirst({
-        where: {
-          id: fileId,
-          userId: userId,
-        },
-      });
-
-      
-      if (!file) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "File not found or you don't have permission to delete this file." });
+      if (!userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "User ID not found." });
       }
 
-      // Delete the file
-      await db.file.delete({
-        where: { id: fileId },
-      });
+      try {
+        // Check if the file exists and belongs to the authenticated user
+        const file = await db.file.findFirst({
+          where: {
+            id: id,
+            userId: userId,
+          },
+        });
 
-      return { success: true, message: "File deleted successfully." };
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to delete file." });
-    }
+        
+        if (!file) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "File not found or you don't have permission to delete this file." });
+        }
+
+        // Delete the file
+        await db.file.delete({
+          where: { id: id },
+        });
+
+        return { success: true, message: "File deleted successfully." };
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to delete file." });
+      }
   }),
+
+
+
+
+getfile:privateProcedure.input(z.object({key:z.string()}))
+.mutation(async({ctx,input})=>{
+  const userId = ctx.userId;
+
+  const file = await db.file.findFirst({
+    where:{
+      key:input.key,
+      userId
+    }
+ 
+  })
+
+  if(!file){
+    throw new TRPCError({code: 'NOT_FOUND', message: 'File not found'})
+  } 
+  return file;
+})
+
+
+
 });
 
 export type AppRouter = typeof appRouter;
