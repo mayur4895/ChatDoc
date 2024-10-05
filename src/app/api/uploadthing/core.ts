@@ -20,7 +20,7 @@ export const ourFileRouter = {
         data:{
             key:file.key,
             name: file.name, 
-            url:  `http://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`,
+            url: file.url,
             uploadStatus:"PROCESSING",
             userId:metadata.userId
         }

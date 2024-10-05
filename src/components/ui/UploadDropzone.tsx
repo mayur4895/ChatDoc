@@ -105,7 +105,7 @@ const router = useRouter();
                 {acceptedFiles.length > 0 && (
                   <div className="max-w-xs p-2 w-full bg-white h-12 rounded-md overflow-hidden border flex items-center justify-center">
                     <File size={20} className="text-blue-500" />
-                    <div className="mt-2 px-3 py-2 items-center flex justify-center h-full text-gray-600 truncate">
+                    <div className="mt-2 px-3 py-2 items-center  w-56 flex justify-center h-full text-gray-600 truncate">
                       {acceptedFiles[0].name}
                     </div>
                   </div>

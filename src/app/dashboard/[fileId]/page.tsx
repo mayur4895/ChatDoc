@@ -1,4 +1,6 @@
+ 
 import PdfRender from '@/components/PdfRender';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/db';
 import { currentUser } from '@clerk/nextjs/server';
@@ -17,7 +19,6 @@ const FilePage = async ({ params }: PageProps) => {
   if (!user) { 
     redirect(`/auth-callback?origin=/dashboard/${fileId}`);
   }
-
  
   const file = await db.file.findFirst({
     where: {
@@ -26,13 +27,13 @@ const FilePage = async ({ params }: PageProps) => {
     },
   });
 
-  console.log({'file':file});
+  console.log({'file':file?.url});
   
  
   return (
-    <div>
- 
-    </div>
+    <ScrollArea  className=" h-[80vh] w-full rounded-md border ">
+          <PdfRender  pdfUrl={file?.url}/>
+    </ScrollArea>
   );
 };
 

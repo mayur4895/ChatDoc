@@ -1,7 +1,6 @@
-// components/AuthCallback.tsx
+ 
 
-'use client';
-
+'use client'; 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { trpc } from '../_trpc/client';
@@ -19,11 +18,11 @@ const AuthCallback = () => {
     }
 
     if (data?.success) {
-      // Redirect on success
+   
       if (origin) {
-        router.push(origin); // Redirect to the origin if available
+          router.push(origin);  
       } else {
-        router.push('/'); // Redirect to home or dashboard
+          router.push('/');  
       }
     }
   }, [data, error, origin, router]);
@@ -39,15 +38,7 @@ const AuthCallback = () => {
     </div>;
   }
 
-  return (
-    <div>
-      {data?.success ? (
-        <div>Authentication successful!</div>
-      ) : (
-        <div>Authentication failed.</div>
-      )}
-    </div>
-  );
+  
 };
 
 export default AuthCallback;
