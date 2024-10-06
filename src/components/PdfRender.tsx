@@ -1,7 +1,7 @@
 'use client';
 
 import { useToast } from '@/hooks/use-toast';
-import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Fullscreen, Loader2, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { CiFileOff } from 'react-icons/ci';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -9,6 +9,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import { ScrollArea } from './ui/scroll-area';
 import { useForm } from 'react-hook-form';
 import { Input } from './ui/input';
+import { PdfModal } from './models/pdf-modal';
 
 if (typeof window !== 'undefined') {
   pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
@@ -27,6 +28,8 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [scale, setScale] = useState<number>(1.0);
+  const [rotation, setRotation] = useState<number>(0);
   const { width, ref } = useResizeDetector();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
@@ -96,6 +99,12 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
     }
   };
 
+
+  const increaseScale = () => setScale((prev) => Math.min(prev + 0.1, 2));
+  const decreaseScale = () => setScale((prev) => Math.max(prev - 0.1, 0.5));
+  const rotatePage = () => setRotation((prev) => (prev + 90) % 360);
+
+
   useEffect(() => {
     const handleScroll = () => {
       if (scrollAreaRef.current) {
@@ -142,7 +151,10 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
  
 
       {!loading && !error && (
-        <div className="w-full h-12 z-50 border flex items-center p-4 gap-5 bg-white sticky top-0">
+       <div className=' flex items-center justify-between border'>
+
+
+<div className="w-full h-12 z-50   flex items-center p-4 gap-5 bg-white sticky top-0">
           <button onClick={goToPreviousPage} disabled={currentPage === 1}>
             <ChevronUp size={20} />
           </button>
@@ -166,12 +178,38 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
             <ChevronDown size={20} />
           </button>
         </div>
+
+        <div className=' flex items-center gap-5 mr-5'>
+        <button onClick={increaseScale}>
+                <ZoomIn size={20} />
+              </button>
+              <button onClick={decreaseScale}>
+                <ZoomOut size={20} />
+              </button>
+              <button onClick={rotatePage}>
+                <RotateCw size={20} />
+              </button>
+
+            
+              <PdfModal
+              
+              pdfUrl={pdfUrl}
+              numPages={numPages}
+              onLoadError={onLoadError}
+              onLoadSuccess={onLoadSuccess}
+              scale={scale}
+              rotate={rotation}
+              currentPage={currentPage}
+              />
+             
+          </div>
+        </div>
       )}
 
       <ScrollArea ref={scrollAreaRef} className='h-[calc(90vh-3rem)] border'>
 
       {loading && (
-        <div className='flex items-center justify-center w-full h-[80vh]'>
+        <div className='flex items-center justify-center w-full h-[85vh]'>
           <div className='text-center flex items-center flex-col gap-5'>
             <Loader2 className='animate-spin' size={22} />
             <span>Loading PDF...</span>
@@ -198,6 +236,8 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
                   pageNumber={currentPage }
                   width={width ? width : undefined}
                   renderTextLayer={false}
+                  scale={scale}
+                  rotate={rotation}
                   renderAnnotationLayer={false}
                 />
               </div>
