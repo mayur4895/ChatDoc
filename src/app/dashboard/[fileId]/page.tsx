@@ -31,9 +31,9 @@ const FilePage = async ({ params }: PageProps) => {
   
  
   return (
-    <ScrollArea  className=" h-[80vh] w-full rounded-md border ">
-          <PdfRender  pdfUrl={file?.url}/>
-    </ScrollArea>
+    <div  className="   w-full rounded-md   ">
+          <PdfRender  pdfUrl={file?.url} />
+    </div>
   );
 };
 
