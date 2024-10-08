@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { privateProcedure, publicProcedure, router } from "./trpc";
 import { db } from "@/lib/db";
  import { z } from 'zod';
+ 
 
 
 export const appRouter = router({
@@ -117,26 +118,46 @@ export const appRouter = router({
 
 
 
-getfile:privateProcedure.input(z.object({key:z.string()}))
-.mutation(async({ctx,input})=>{
-  const userId = ctx.userId;
+  getFileUploadStatus:privateProcedure.input(
+    z.object({
+    fileId:z.string() 
+ })
+  ).query( async({input,ctx})=>{
+    const { userId } = ctx;
+    const { fileId } = input
 
-  const file = await db.file.findFirst({
-    where:{
+    const file = await db.file.findFirst({
+      where:{
+        id:fileId,
+        userId:userId
+      }
+    })
+
+    if(!file) return {status:"PENDING" as   const}
+
+    return {status:file.uploadStatus}
+  }),
+
+  
+
+
+ getfile:privateProcedure.input(z.object({key:z.string()}))
+       .mutation(async({ctx,input})=>{
+         const userId = ctx.userId;
+
+      const file = await db.file.findFirst({
+       where:{
       key:input.key,
       userId
     }
  
-  })
+   })
 
-  if(!file){
+     if(!file){
     throw new TRPCError({code: 'NOT_FOUND', message: 'File not found'})
-  } 
-  return file;
-})
-
-
-
-});
+   } 
+    return file;
+    })  
+  });
 
 export type AppRouter = typeof appRouter;

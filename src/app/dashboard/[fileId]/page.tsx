@@ -1,10 +1,11 @@
  
+import ChatWrapper from '@/components/ChatWrapper';
 import PdfRender from '@/components/PdfRender';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/db';
 import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import React from 'react';
 
 interface PageProps {
@@ -29,11 +30,19 @@ const FilePage = async ({ params }: PageProps) => {
 
   console.log({'file':file?.url});
   
+  if(!file) notFound();
  
   return (
-    <div  className="   w-full rounded-md   ">
-          <PdfRender  pdfUrl={file?.url} />
-    </div>
+     
+ 
+        
+        <div    className='          grid lg:grid-cols-2'>
+         
+         <PdfRender  pdfUrl={file.url} />  
+        <ChatWrapper  fileId={file.id}/>
+      </div>
+        
+  
   );
 };
 

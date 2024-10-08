@@ -66,7 +66,7 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
   };
 
   const goToNextPage = () => {
-    if (numPages && currentPage < numPages) { 
+    if (numPages && currentPage < numPages) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       setValue('currentPage', newPage);
@@ -99,11 +99,9 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
     }
   };
 
-
-  const increaseScale = () => setScale((prev) => Math.min(prev + 0.1, 2));
+  const increaseScale = () => setScale((prev) => Math.min(prev + 0.1, 2.0));
   const decreaseScale = () => setScale((prev) => Math.max(prev - 0.1, 0.5));
   const rotatePage = () => setRotation((prev) => (prev + 90) % 360);
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -127,13 +125,21 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
 
     const scrollArea = scrollAreaRef.current;
     scrollArea?.addEventListener('scroll', handleScroll);
-    
+
     return () => scrollArea?.removeEventListener('scroll', handleScroll);
   }, [setValue]);
 
   useEffect(() => {
     setValue('currentPage', currentPage);
   }, [currentPage, setValue]);
+
+  // Handle resizing to adjust the scale
+  useEffect(() => {
+    if (width) {
+      const newScale = Math.min(width / 600, 2.0);
+      setScale(newScale);
+    }
+  }, [width]);
 
   if (error) {
     return (
@@ -147,52 +153,45 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
   }
 
   return (
-    <div className="flex-1 relative flex-col justify-center items-start w-full h-auto">
- 
-
+    <div className="flex-1 relative flex-col justify-center items-start w-full h-auto overflow-hidden" >
       {!loading && !error && (
-       <div className=' flex items-center justify-between border'>
+        <div className='flex items-center justify-between border'>
+          <div className="w-full h-12 z-50 flex items-center p-4 gap-5 bg-white sticky top-0">
+            <button onClick={goToPreviousPage} disabled={currentPage === 1}>
+              <ChevronUp size={20} />
+            </button>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2">
+              <Input
+                type="number"
+                max={numPages}
+                {...register('currentPage', {
+                  required: true,
+                  valueAsNumber: true,
+                  min: 1,
+                  max: numPages || 1,
+                })}
+                className="w-20 text-center"
+                onChange={handleInputChange}
+              />
+              <span>/ {numPages}</span>
+              <button type="submit" className="hidden">Go</button>
+            </form>
+            <button onClick={goToNextPage} disabled={numPages ? currentPage === numPages : true}>
+              <ChevronDown size={20} />
+            </button>
+          </div>
 
-
-<div className="w-full h-12 z-50   flex items-center p-4 gap-5 bg-white sticky top-0">
-          <button onClick={goToPreviousPage} disabled={currentPage === 1}>
-            <ChevronUp size={20} />
-          </button>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2">
-            <Input
-              type="number"
-              max={numPages}
-              {...register('currentPage', {
-                required: true,
-                valueAsNumber: true,
-                min: 1,
-                max: numPages || 1,
-              })}
-              className="w-20 text-center"
-              onChange={handleInputChange}
-            />
-            <span>/ {numPages}</span>
-            <button type="submit" className="hidden">Go</button>
-          </form>
-          <button onClick={goToNextPage} disabled={numPages ? currentPage === numPages : true}>
-            <ChevronDown size={20} />
-          </button>
-        </div>
-
-        <div className=' flex items-center gap-5 mr-5'>
-        <button onClick={increaseScale}>
-                <ZoomIn size={20} />
-              </button>
-              <button onClick={decreaseScale}>
-                <ZoomOut size={20} />
-              </button>
-              <button onClick={rotatePage}>
-                <RotateCw size={20} />
-              </button>
-
-            
-              <PdfModal
-              
+          <div className='flex items-center gap-5 mr-5'>
+            <button onClick={increaseScale}>
+              <ZoomIn size={20} />
+            </button>
+            <button onClick={decreaseScale}>
+              <ZoomOut size={20} />
+            </button>
+            <button onClick={rotatePage}>
+              <RotateCw size={20} />
+            </button>
+            <PdfModal
               pdfUrl={pdfUrl}
               numPages={numPages}
               onLoadError={onLoadError}
@@ -200,48 +199,51 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
               scale={scale}
               rotate={rotation}
               currentPage={currentPage}
-              />
-             
+            />
           </div>
         </div>
       )}
 
-      <ScrollArea ref={scrollAreaRef} className='h-[calc(90vh-3rem)] border'>
-
-      {loading && (
-        <div className='flex items-center justify-center w-full h-[85vh]'>
-          <div className='text-center flex items-center flex-col gap-5'>
-            <Loader2 className='animate-spin' size={22} />
-            <span>Loading PDF...</span>
+      <ScrollArea ref={scrollAreaRef} className='h-[calc(85vh-3rem)]  w-full bg-zinc-50 border overflow-auto'>
+        {loading && (
+          <div className='flex items-center justify-center w-full h-[85vh]'>
+            <div className='text-center flex items-center flex-col gap-5'>
+              <Loader2 className='animate-spin' size={22} />
+              <span>Loading PDF...</span>
+            </div>
           </div>
-        </div>
-      )}
-        <div ref={ref} className="pdf-container relative w-full pr-8">
+        )}
+        <div ref={ref} className="    w-full ">
           <Document
             file={pdfUrl}
             onLoadSuccess={onLoadSuccess}
             onLoadError={onLoadError}
-            className="flex flex-col items-center justify-center w-full"
+            className="flex flex-col items-center justify-center w-full overflow-hidden"
           >
-            {Array.from({ length: numPages || 0 }, (_, index) => (
-              <div
-                key={`page-${index + 1}`}
-                ref={(el) => {
-                  if (el) pageRefs.current[index] = el;
-                }}
-                className="mb-4"
-              >
-                <Page
-                  key={`page_${currentPage   }`}
-                  pageNumber={currentPage }
-                  width={width ? width : undefined}
-                  renderTextLayer={false}
-                  scale={scale}
-                  rotate={rotation}
-                  renderAnnotationLayer={false}
-                />
-              </div>
-            ))}
+           {Array.from(new Array(numPages), (el, index) => (
+  <div
+    key={index}
+    ref={(pageRef) => {
+      pageRefs.current[index] = pageRef; // Assign the ref without returning anything
+    }}
+    className='border mb-5 w-auto justify-center'
+  >
+    <Page
+      pageNumber={currentPage }
+      scale={scale}
+      rotate={rotation}
+      renderTextLayer={false}  // Disable text layer
+      renderAnnotationLayer={false} // Disable annotation layer
+      className="shadow-md rounded"
+      loading={
+        <div className="flex items-center justify-center w-full h-full">
+          <Loader2 className="animate-spin" />
+        </div>
+      }
+    />
+  </div>
+))}
+
           </Document>
         </div>
       </ScrollArea>
