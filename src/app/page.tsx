@@ -10,9 +10,9 @@ import React from 'react';
 
 const Home =  () => {
  
-  const { isSignedIn, user } = useUser()
+  // const { isSignedIn, user } = useUser()
  
-  if(!user || !user.id) redirect("/auth-callback?origin=dashboard") 
+  // if(!user || !user.id) redirect("/auth-callback?origin=dashboard") 
   return (
     <div> 
   <Banner/>

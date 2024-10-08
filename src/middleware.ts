@@ -11,16 +11,9 @@ const isPublicRoute = createRouteMatcher([
 // Define root route
 const isRootRoute = createRouteMatcher(['/']);
 
+// Middleware
 export default clerkMiddleware((auth, req) => {
   const { userId } = auth(); // Get userId from the auth object
-
-  // Redirect unauthenticated users trying to access the root route to the sign-in page
-  if (isRootRoute(req)) {
-    if (!userId) {
-      const signInUrl = new URL('/sign-in', req.url);
-      return NextResponse.redirect(signInUrl);
-    }
-  }
 
   // Redirect unauthenticated users trying to access the /dashboard to the sign-in page
   if (req.nextUrl.pathname.startsWith('/dashboard')) {
@@ -30,9 +23,14 @@ export default clerkMiddleware((auth, req) => {
     }
   }
 
-  // Protect all other routes unless they are explicitly marked as public
+  // Allow access to the root route without authentication
+  if (isRootRoute(req)) {
+    return NextResponse.next(); // Allow access to the home page
+  }
+
+  // Protect all other routes
   if (!isPublicRoute(req)) {
-    auth().protect(); // Protect route using Clerk's authentication
+    auth().protect();  
   }
 });
 

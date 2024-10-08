@@ -133,7 +133,7 @@ export default function PdfRender({ pdfUrl }: PdfRenderProps) {
     setValue('currentPage', currentPage);
   }, [currentPage, setValue]);
 
-  // Handle resizing to adjust the scale
+ 
   useEffect(() => {
     if (width) {
       const newScale = Math.min(width / 600, 2.0);

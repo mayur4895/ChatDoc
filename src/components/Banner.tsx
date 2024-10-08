@@ -1,6 +1,7 @@
 import React from 'react';
 import { BackgroundLines } from './ui/background-lines';
 import { Button } from './ui/button';
+import Link from 'next/link';
 
 const Banner = () => {
   return (
@@ -15,7 +16,7 @@ const Banner = () => {
           <p className="max-w-xl mx-auto text-sm md:text-lg text-neutral-700 dark:text-neutral-400 text-center">
             Allow of you conversation with any PDF document. Simplify upload your PDF and start asking questions to your document.
           </p>
-          <Button className='cursor-pointer mt-5'>Get Started</Button>
+          <Button className='cursor-pointer mt-5'> <Link href="/dashboard">Get Started</Link></Button>
         </div>
 
    
