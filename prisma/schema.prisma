@@ -8,23 +8,22 @@ datasource db {
 }
 
 model User {
-  id                      String   @id @map("_id") @default(auto())  @db.ObjectId
-  externalId              String   @unique
-  email                   String   @unique 
-  
-  stripeCustomerId        String?  @unique @map("stripe_customer_id")
-  stripeSubscriptionId    String?  @map("stripe_subscription_id")
-  stripePriceId           String?  @map("stripe_price_id")
-  stripeCurrentPeriodEnd  DateTime? @map("stripe_current_period_end")
-
-
+  id                     String   @id @map("_id") @default(auto()) @db.ObjectId
+  externalId             String   @unique
+  email                  String   @unique
  
-  files                   File[]   @relation("UserFiles")
+  stripeCustomerId       String?  @unique @map("stripe_customer_id")
+  stripeSubscriptionId   String?  @map("stripe_subscription_id")
+  stripePriceId          String?  @map("stripe_price_id")
+  stripeCurrentPeriodEnd DateTime? @map("stripe_current_period_end")
+
+  files                  File[]   @relation("UserFiles")
+  messages               Message[] @relation("UserMessages")
+
   @@map("user")
 }
 
-
-enum UploadStatus{
+enum UploadStatus {
   SUCCESS
   FAILED
   PROCESSING
@@ -40,15 +39,28 @@ model File {
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+    
+  messages      Message[]    @relation("FileMessages")
 
-  user          User?        @relation(fields: [userId], references: [id], name: "UserFiles")
-  userId        String?      
+  user          User?        @relation("UserFiles", fields: [userId], references: [id])
+  userId        String?
 
   @@map("file")
 }
 
+model Message {
+  id            String       @id @map("_id") @default(auto()) @db.ObjectId
+  text          String
+  isUserMessage Boolean
 
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
+  file          File?        @relation("FileMessages", fields: [fileId], references: [id])
+  fileId        String?
 
+  user          User?        @relation("UserMessages", fields: [userId], references: [id])
+  userId        String?
 
-
+  @@map("message")
+}

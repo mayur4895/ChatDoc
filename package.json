@@ -32,6 +32,7 @@
     "@trpc/react-query": "^11.0.0-rc.553",
     "@trpc/server": "^11.0.0-rc.553",
     "@uploadthing/react": "^7.0.2",
+    "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.9.0",
@@ -51,7 +52,8 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^7.0.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.0-rc.2"
   },
   "devDependencies": {
     "@types/node": "^20",

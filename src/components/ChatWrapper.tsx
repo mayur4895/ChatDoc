@@ -10,6 +10,7 @@ import { IoReturnDownBackOutline } from "react-icons/io5";
 import Link from 'next/link'
 import Messages from './Messages'
 import ChatInput from './ChatInput'
+import MessageProvider from './providers/MessageProvider'
 
 interface ChatWrapperProps{
     fileId:string  
@@ -69,10 +70,15 @@ const ChatWrapper = ({fileId}:ChatWrapperProps) => {
 
    
   return (
-    <div className=' w-full p-4  h-[calc(85vh)] border'>
+    <MessageProvider fileId={fileId}>
+
+<div className=' w-full p-4  relative bg-white divide-emerald-800 flex  justify-between flex-col h-[calc(75vh)]  '>
+        <div className=' flex-1   justify-between flex flex-col mb-2 bg'>
         <Messages/> 
-        <ChatInput/>
+        </div>
+   
     </div>
+    </MessageProvider>
   )
 }
 

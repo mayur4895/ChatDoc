@@ -1,10 +1,11 @@
 import React from 'react'
+import { ScrollArea } from './ui/scroll-area'
 
 const Messages = () => {
   return (
-    <div>
+    <ScrollArea  className='h-full  w-full text-sm'>
       messages
-    </div>
+    </ScrollArea >
   )
 }
 
