@@ -11,11 +11,11 @@ interface MessageProviderProps {
 const MessageProvider: React.FC<MessageProviderProps> = ({ fileId, children }) => {
   const { message, setMessage, addMessage, isLoading } = useMessageStore();
 
-  // Handler for adding the message
+ 
   const handleAddMessage = async () => {
     if (message.trim()) {
-      await addMessage(fileId); // Call the mutation with fileId
-      setMessage(''); // Clear the message after sending
+      await addMessage(fileId);  
+      setMessage('');  
     }
   };
 
