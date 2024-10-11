@@ -6,7 +6,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { pinecone } from "@/lib/pinecone";  
-import pRetry from 'p-retry'; // Ensure you import p-retry
+import pRetry from 'p-retry';
 
 const f = createUploadthing();
 
@@ -22,7 +22,8 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      let createdFile:any; // Declare variable in higher scope
+      let createdFile:any;
+
       try {
         // Create file record in DB
         createdFile = await db.file.create({
@@ -37,6 +38,9 @@ export const ourFileRouter = {
 
         // Fetch the uploaded PDF
         const response = await fetch(file.url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+        }
         const blob = await response.blob();
 
         // Load PDF using PDFLoader from Langchain
@@ -46,51 +50,42 @@ export const ourFileRouter = {
         // Initialize Pinecone Client
         const pineConeIndex = pinecone.Index("chatdoc");
 
-        // Set up OpenAI embeddings with a specific model (e.g., text-embedding-ada-002)
+        // Set up OpenAI embeddings
         const embeddings = new OpenAIEmbeddings({
           openAIApiKey: process.env.OPENAI_API_KEY!,
-          modelName: 'text-embedding-ada-002', // Specify the model here
+          modelName: 'text-embedding-ada-002',
         });
 
         // Retry logic for storing documents in Pinecone
         const retryOperation = pRetry(async () => {
           return await PineconeStore.fromDocuments(docs, embeddings, {
             pineconeIndex: pineConeIndex,
-            namespace: createdFile.id, // Use file ID as namespace
+            namespace: createdFile.id,
           });
         }, {
-          retries: 5,  // Retry 5 times
-          factor: 2,   // Exponential backoff
-          minTimeout: 1000,  // Minimum 1 second between retries
+          retries: 5,
+          factor: 2,
+          minTimeout: 1000,
         });
-       
+
         await retryOperation;
-     
+
         // Update file status in the database
         await db.file.update({
-          where: {
-            id: createdFile.id,
-          },
-          data: {
-            uploadStatus: "SUCCESS",
-          },
+          where: { id: createdFile.id },
+          data: { uploadStatus: "SUCCESS" },
         });
       } catch (error) {
         console.error("Error processing PDF upload:", error);
-  
+
         if (createdFile) {
-          // Update file status to 'FAILED' if the file was created
           await db.file.update({
-            where: {
-              id: createdFile.id, // Access createdFile.id here
-            },
-            data: {
-              uploadStatus: "FAILED",
-            },
+            where: { id: createdFile.id },
+            data: { uploadStatus: "FAILED" },
           });
         }
         
-        throw error; // Re-throw error after handling
+        throw error;
       }
     }),
 } satisfies FileRouter;
