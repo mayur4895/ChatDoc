@@ -5,7 +5,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { pinecone } from "@/lib/pinecone"; // Import the Pinecone client setup
+import { pinecone } from "@/lib/pinecone";  
 import pRetry from 'p-retry'; // Ensure you import p-retry
 
 const f = createUploadthing();
@@ -75,7 +75,7 @@ export const ourFileRouter = {
             uploadStatus: "SUCCESS",
           },
         });
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error processing PDF upload:", error);
   
         if (createdFile) {
