@@ -16,25 +16,26 @@ export const ourFileRouter = {
       const user = await currentUser();
 
       if (!user || !user.id) {
+        console.error("User not found, authorization failed");
         throw new UploadThingError("Unauthorized");
       }
 
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      let createdFile:any;
+      const createdFile = await db.file.create({
+        data: {
+          key: file.key,
+          name: file.name,
+          url: file.url,
+          uploadStatus: "PROCESSING",
+          userId: metadata.userId,
+        },
+      });
 
       try {
         // Create file record in DB
-        createdFile = await db.file.create({
-          data: {
-            key: file.key,
-            name: file.name,
-            url: file.url,
-            uploadStatus: "PROCESSING",
-            userId: metadata.userId,
-          },
-        });
+      
 
         // Fetch the uploaded PDF
         const response = await fetch(file.url);
@@ -75,18 +76,21 @@ export const ourFileRouter = {
           where: { id: createdFile.id },
           data: { uploadStatus: "SUCCESS" },
         });
-      } catch (error) {
-        console.error("Error processing PDF upload:", error);
 
-        if (createdFile) {
+        console.log(`Successfully processed and stored: ${file.name}`);
+      } catch (err) {
+        console.error("Error processing PDF upload:", err);
+ 
           await db.file.update({
-            where: { id: createdFile.id },
             data: { uploadStatus: "FAILED" },
+            where: { 
+              id: createdFile.id
+             },
+            
           });
         }
-        
-        throw error;
-      }
+
+       
     }),
 } satisfies FileRouter;
 
