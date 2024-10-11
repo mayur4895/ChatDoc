@@ -33,62 +33,62 @@ export const ourFileRouter = {
         },
       });
 
-      try {
-        // Create file record in DB
+      // try {
+      //   // Create file record in DB
       
 
-        // Fetch the uploaded PDF
-        const response = await fetch(file.url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch PDF: ${response.statusText}`);
-        }
-        const blob = await response.blob();
+      //   // Fetch the uploaded PDF
+      //   const response = await fetch(file.url);
+      //   if (!response.ok) {
+      //     throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+      //   }
+      //   const blob = await response.blob();
 
-        // Load PDF using PDFLoader from Langchain
-        const loader = new PDFLoader(blob);
-        const docs = await loader.load();
+      //   // Load PDF using PDFLoader from Langchain
+      //   const loader = new PDFLoader(blob);
+      //   const docs = await loader.load();
 
-        // Initialize Pinecone Client
-        const pineConeIndex = pinecone.Index("chatdoc");
+      //   // Initialize Pinecone Client
+      //   const pineConeIndex = pinecone.Index("chatdoc");
 
-        // Set up OpenAI embeddings
-        const embeddings = new OpenAIEmbeddings({
-          openAIApiKey: process.env.OPENAI_API_KEY!,
-          modelName: 'text-embedding-ada-002',
-        });
+      //   // Set up OpenAI embeddings
+      //   const embeddings = new OpenAIEmbeddings({
+      //     openAIApiKey: process.env.OPENAI_API_KEY!,
+      //     modelName: 'text-embedding-ada-002',
+      //   });
 
-        // Retry logic for storing documents in Pinecone
-        const retryOperation = pRetry(async () => {
-          return await PineconeStore.fromDocuments(docs, embeddings, {
-            pineconeIndex: pineConeIndex,
-            namespace: createdFile.id,
-          });
-        }, {
-          retries: 5,
-          factor: 2,
-          minTimeout: 1000,
-        });
+      //   // Retry logic for storing documents in Pinecone
+      //   const retryOperation = pRetry(async () => {
+      //     return await PineconeStore.fromDocuments(docs, embeddings, {
+      //       pineconeIndex: pineConeIndex,
+      //       namespace: createdFile.id,
+      //     });
+      //   }, {
+      //     retries: 5,
+      //     factor: 2,
+      //     minTimeout: 1000,
+      //   });
 
-        await retryOperation;
+      //   await retryOperation;
 
-        // Update file status in the database
-        await db.file.update({
-          where: { id: createdFile.id },
-          data: { uploadStatus: "SUCCESS" },
-        });
+      //   // Update file status in the database
+      //   await db.file.update({
+      //     where: { id: createdFile.id },
+      //     data: { uploadStatus: "SUCCESS" },
+      //   });
 
-        console.log(`Successfully processed and stored: ${file.name}`);
-      } catch (err) {
-        console.error("Error processing PDF upload:", err);
+      //   console.log(`Successfully processed and stored: ${file.name}`);
+      // } catch (err) {
+      //   console.error("Error processing PDF upload:", err);
  
-          await db.file.update({
-            data: { uploadStatus: "FAILED" },
-            where: { 
-              id: createdFile.id
-             },
+      //     await db.file.update({
+      //       data: { uploadStatus: "FAILED" },
+      //       where: { 
+      //         id: createdFile.id
+      //        },
             
-          });
-        }
+      //     });
+      //   }
 
        
     }),
